@@ -57,8 +57,8 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox URL 
     Make sure you change the popup button to _Pass input as arguments_.
 4. Save the Quick Action to the default location. Give it the name you want it to have in the menu, like "Get Dropbox URL".
 
-> ***WARNING***
-> Make sure the path here is the same as the path that you saved the script to earlier!
+    > **WARNING**
+    > Make sure the path here is the same as the path that you saved the script to earlier!
 
 5. Once you're done, the action should look like this:
 
