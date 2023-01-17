@@ -54,7 +54,9 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox URL 
         $HOME/bin/get_dropbox_url.py "$f"
     done
     ```
-    Make sure you change the popup button to _Pass input as arguments_.
+    > **Warning**
+    >
+    > Make sure you change the popup button to _Pass input as arguments_.
 
     > **Warning**
     >
