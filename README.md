@@ -22,23 +22,34 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
 ![Change sharing.write permission setting](assets/sharing.write.jpg)
 
 7. Reload the page. (This is in case you've already created an access token. Once you change the permissions, you need to generate a new token!)
-8. Generate a new access token.
+8. Copy the App Key:
 
-![Generate access token on the Settings tab](assets/generate-token.jpg)
+![Copy App Key on the Settings tab](assets/app-key.jpg)
 
-9. Use this to update the `TOKEN` variable on line 37 in the script file.
-10. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 42.
+9. Use this to update the `APP_KEY` variable on line 39 in the script file.
+10. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 44.
 11. Set permissions so you can run the script:
 
 ```
 chmod +x ~/bin/get_dropbox_url.py
 ```
 
-Now you can call it to generate links.
+12. Call the script once and follow the instructions to get a refresh token the first time:
+
+```
+$ python get_dropbox_link.py ~/Dropbox/Public/cat.jpg
+Refresh token not found. Let's generate a new one.
+1. Go to: https://www.dropbox.com/oauth2/authorize?xxxx
+2. Click "Allow", etc. (You may need to log in first.)
+3. Copy the Access Code.
+Enter the Access Code here: xxxx
+https://www.dropbox.com/s/xxxx/cat.jpg?dl=0
+```
+Now you can continue calling it to generate links.
 
 ```
 $ get_dropbox_url.py ~/Dropbox/file.txt
-https://www.dropbox.com/s/wlz10rosbw29r1t/file.txt?dl=0
+https://www.dropbox.com/s/xxxx/file.txt?dl=0
 $
 ```
 
