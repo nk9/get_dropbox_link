@@ -35,8 +35,8 @@ from dropbox import DropboxOAuth2FlowNoRedirect
 from dropbox.exceptions import ApiError, AuthError
 
 # This is the App Key, NOT an OAuth2 token. Find your app's key in the App Console.
-# See <https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/>
-APP_KEY = "f0s5p1i7657urkd"
+# See the README.
+APP_KEY = ""
 
 # Either 'personal' or 'business'. Must match the account which generated
 # the TOKEN above.
@@ -44,7 +44,7 @@ APP_KEY = "f0s5p1i7657urkd"
 ACCOUNT_TYPE = "personal"
 
 # Path to save script configuration. You probably don't need to change this.
-CONFIG_JSON='~/.get_dropbox_link_conf.json'
+CONFIG_JSON = "~/.get_dropbox_link_conf.json"
 
 
 def main():
