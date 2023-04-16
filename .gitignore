@@ -128,4 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+*.sublime-workspace
 .DS_Store
