@@ -34,7 +34,6 @@ from pathlib import Path as P
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
-from dropbox.exceptions import ApiError, AuthError
 
 # This is the App Key, NOT an OAuth2 token. Find your app's key in the App Console.
 # See the README.
@@ -55,7 +54,7 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
-    fetcher = LinkFetcher(args.paths)
+    LinkFetcher(args.paths)
 
 
 class LinkFetcher():
@@ -81,8 +80,8 @@ class LinkFetcher():
                 with open(P.home() / ".dropbox/info.json") as jsonf:
                     info = json.load(jsonf)
                     local_dbx_path = info[ACCOUNT_TYPE]["path"]
-            except Exception:
-                logging.error("Couldn't find Dropbox folder path")
+            except Exception as e:
+                logging.error(f"Couldn't find Dropbox folder path: {e}")
                 sys.exit(1)
 
             for path in paths:
@@ -98,7 +97,7 @@ class LinkFetcher():
                 try:
                     link = dbx.sharing_create_shared_link(dbx_path)
                     print(link.url)
-                except ApiError as e:
+                except dropbox.exceptions.ApiError as e:
                     logging.error(str(e))
                     sys.exit(1)
 
