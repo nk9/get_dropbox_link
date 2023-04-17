@@ -25,9 +25,11 @@
 import argparse
 import json
 import logging
-import os
 import sys
+import typing as t
 import webbrowser
+from dataclasses import dataclass
+from datetime import datetime as dt
 from pathlib import Path as P
 
 import dropbox
@@ -48,84 +50,131 @@ CONFIG_JSON = "~/.get_dropbox_link_conf.json"
 
 
 def main():
-    local_dbx_path = None
     args = parseArguments()
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
-    refresh_token = get_refresh_token()
+    fetcher = LinkFetcher(args.paths)
 
-    with dropbox.Dropbox(oauth2_refresh_token=refresh_token, app_key=APP_KEY) as dbx:
-        try:
-            dbx.users_get_current_account()
-        except AuthError:
-            sys.exit(
-                "ERROR: Invalid access token; try re-generating an "
-                "access token from the app console on the web."
-            )
 
-        try:
-            with open(P.home() / ".dropbox/info.json") as jsonf:
-                info = json.load(jsonf)
-                local_dbx_path = info[ACCOUNT_TYPE]["path"]
-        except Exception:
-            logging.error("Couldn't find Dropbox folder path")
-            sys.exit(1)
+class LinkFetcher():
+    def __init__(self, paths):
+        local_dbx_path = None
 
-        for path in args.paths:
+        config_path = P(CONFIG_JSON).expanduser()
+        self.config = Config.with_path(config_path)
+        refresh_token = self.get_refresh_token()
+
+        with dropbox.Dropbox(oauth2_refresh_token=refresh_token,
+                             oauth2_access_token=self.config.access_token,
+                             oauth2_access_token_expiration=self.config.access_token_expiration,
+                             app_key=APP_KEY) as dbx:
+            
+            if not self.config.access_token or self.config.access_token_expiration < dt.now():
+                dbx.refresh_access_token()
+                self.config.update_access_token(
+                    dbx._oauth2_access_token,
+                    dbx._oauth2_access_token_expiration)
+
             try:
-                p = P(path).absolute()
-                logging.debug(f"Processing file at path {p}")
-                relp = p.relative_to(local_dbx_path)
-                dbx_path = f"/{relp}"
+                with open(P.home() / ".dropbox/info.json") as jsonf:
+                    info = json.load(jsonf)
+                    local_dbx_path = info[ACCOUNT_TYPE]["path"]
+            except Exception:
+                logging.error("Couldn't find Dropbox folder path")
+                sys.exit(1)
+
+            for path in paths:
+                try:
+                    p = P(path).absolute()
+                    logging.debug(f"Processing file at path {p}")
+                    relp = p.relative_to(local_dbx_path)
+                    dbx_path = f"/{relp}"
+                except Exception as e:
+                    logging.error(str(e))
+                    sys.exit(1)
+
+                try:
+                    link = dbx.sharing_create_shared_link(dbx_path)
+                    print(link.url)
+                except ApiError as e:
+                    logging.error(str(e))
+                    sys.exit(1)
+
+
+    def get_refresh_token(self):
+        # Check if the config contains a token
+        refresh_token = self.config.refresh_token
+
+        # If not, go through the auth flow
+        if not refresh_token:
+            auth_flow = DropboxOAuth2FlowNoRedirect(APP_KEY, use_pkce=True, token_access_type='offline')
+
+            authorize_url = auth_flow.start()
+            webbrowser.open(authorize_url)
+            print("Refresh token not found. Let's generate a new one.")
+            print("1. Go to: " + authorize_url)
+            print("2. Click \"Allow\", etc. (You may need to log in first.)")
+            print("3. Copy the authorization code.")
+            auth_code = input("Enter the authorization code here: ").strip()
+
+            try:
+                oauth_result = auth_flow.finish(auth_code)
+                
+                self.config.refresh_token = oauth_result.refresh_token
+                self.config.update_access_token(oauth_result.access_token,
+                                                oauth_result.expires_at)
             except Exception as e:
                 logging.error(str(e))
-                sys.exit(1)
+                exit(1)
 
-            try:
-                link = dbx.sharing_create_shared_link(dbx_path)
-                print(link.url)
-            except ApiError as e:
-                logging.error(str(e))
-                sys.exit(1)
+        return refresh_token
 
-def get_refresh_token():
-    # Check if the refresh token file exists and contains a token
-    config_path = P(CONFIG_JSON).expanduser()
-    refresh_token = None
+@dataclass
+class Config:
+    path: P
+    refresh_token: t.Optional[str]
+    access_token: t.Optional[str]
+    access_token_expiration: dt = dt.now()
 
-    try:
-        with open(config_path) as f:
-            config_path = json.load(f)
-            refresh_token = config_path.get("refresh_token")
-    except Exception as e:
-        pass
+    def update_access_token(self, new_token, new_expiration):
+        if new_expiration != self.access_token_expiration or new_token != self.access_token:
+            self.access_token = new_token
+            self.access_token_expiration = new_expiration
+            self.save()
 
-    # If the config file doesn't exist or doesn't contain a token, go through the auth flow
-    if not refresh_token:
-        auth_flow = DropboxOAuth2FlowNoRedirect(APP_KEY, use_pkce=True, token_access_type='offline')
+    def save(self):
+        with open(self.path, 'w') as config_f:
+            json.dump({
+                "refresh_token": self.refresh_token,
+                "access_token": self.access_token,
+                "access_token_expiration": self.access_token_expiration.isoformat()
+                }, config_f)
 
-        authorize_url = auth_flow.start()
-        webbrowser.open(authorize_url)
-        print("Refresh token not found. Let's generate a new one.")
-        print("1. Go to: " + authorize_url)
-        print("2. Click \"Allow\" (you might have to log in first).")
-        print("3. Copy the authorization code.")
-        auth_code = input("Enter the authorization code here: ").strip()
+    @classmethod
+    def from_dict(cls: t.Type["Config"], path: P, obj: dict):
+        expiration = dt.now()
 
+        if expiration_str := obj.get("access_token_expiration"):
+            expiration = dt.fromisoformat(expiration_str)
+
+        return cls(
+            path=path,
+            refresh_token=obj.get("refresh_token"),
+            access_token=obj.get("access_token"),
+            access_token_expiration=expiration,
+        )
+
+    @classmethod
+    def with_path(cls, path: P):
         try:
-            oauth_result = auth_flow.finish(auth_code)
-            refresh_token = oauth_result.refresh_token
-            
-            with open(config_path, 'w') as outf:
-                json.dump({"refresh_token": refresh_token}, outf)
-        except Exception as e:
-            logging.error(str(e))
-            exit(1)
+            with open(path) as config_f:
+                return Config.from_dict(path, json.load(config_f))
+        except:
+            # If the file doesn't exist yet, or doesn't contain JSON
+            return Config(path, None, None)
 
-    return refresh_token
- 
 
 def parseArguments():
     parser = argparse.ArgumentParser(description="Fetch Dropbox URL for path")
