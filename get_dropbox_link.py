@@ -1,8 +1,10 @@
 #!/usr/local/bin/python3
 # coding=utf-8
 
-# Copyright 2021 Nick Kocharhook
+# Copyright 2023 Nick Kocharhook
 # MIT Licensed
+
+# Version 2
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
