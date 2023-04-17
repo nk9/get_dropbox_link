@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 # coding=utf-8
 
 # Copyright 2023 Nick Kocharhook
@@ -32,7 +32,7 @@ import typing as t
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime as dt
-from pathlib import Path as P
+from pathlib import Path
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
@@ -47,7 +47,7 @@ APP_KEY = ""
 ACCOUNT_TYPE = "personal"
 
 # Path to save script configuration. You probably don't need to change this.
-CONFIG_JSON = "~/.get_dropbox_link_conf.json"
+CONFIG_PATH = "~/.get_dropbox_link_conf.json"
 
 
 def main():
@@ -56,21 +56,25 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
-    LinkFetcher(args.paths)
+    config_path = Path(CONFIG_PATH).expanduser()
+    fetcher = LinkFetcher(APP_KEY, config_path, ACCOUNT_TYPE)
+    fetcher.fetch(args.paths)
 
 
 class LinkFetcher():
-    def __init__(self, paths):
-        local_dbx_path = None
-
-        config_path = P(CONFIG_JSON).expanduser()
+    def __init__(self, app_key, config_path, account_type):
+        self.app_key = app_key
         self.config = Config.with_path(config_path)
+        self.account_type = account_type
+
+    def fetch(self, paths):
+        local_dbx_path = None
         refresh_token = self.get_refresh_token()
 
         with dropbox.Dropbox(oauth2_refresh_token=refresh_token,
                              oauth2_access_token=self.config.access_token,
                              oauth2_access_token_expiration=self.config.access_token_expiration,
-                             app_key=APP_KEY) as dbx:
+                             app_key=self.app_key) as dbx:
             
             if not self.config.access_token or self.config.access_token_expiration < dt.now():
                 dbx.refresh_access_token()
@@ -79,19 +83,19 @@ class LinkFetcher():
                     dbx._oauth2_access_token_expiration)
 
             try:
-                with open(P.home() / ".dropbox/info.json") as jsonf:
+                with open(Path.home() / ".dropbox/info.json") as jsonf:
                     info = json.load(jsonf)
-                    local_dbx_path = info[ACCOUNT_TYPE]["path"]
+                    local_dbx_path = info[self.account_type]["path"]
             except Exception as e:
                 logging.error(f"Couldn't find Dropbox folder path: {e}")
                 sys.exit(1)
 
             for path in paths:
                 try:
-                    p = P(path).absolute()
+                    p = Path(path).absolute()
                     logging.debug(f"Processing file at path {p}")
-                    relp = p.relative_to(local_dbx_path)
-                    dbx_path = f"/{relp}"
+                    relative_p = p.relative_to(local_dbx_path)
+                    dbx_path = f"/{relative_p}"
                 except Exception as e:
                     logging.error(str(e))
                     sys.exit(1)
@@ -110,7 +114,7 @@ class LinkFetcher():
 
         # If not, go through the auth flow
         if not refresh_token:
-            auth_flow = DropboxOAuth2FlowNoRedirect(APP_KEY, use_pkce=True, token_access_type='offline')
+            auth_flow = DropboxOAuth2FlowNoRedirect(self.app_key, use_pkce=True, token_access_type='offline')
 
             authorize_url = auth_flow.start()
             webbrowser.open(authorize_url)
@@ -134,7 +138,7 @@ class LinkFetcher():
 
 @dataclass
 class Config:
-    path: P
+    path: Path
     refresh_token: t.Optional[str]
     access_token: t.Optional[str]
     access_token_expiration: dt = dt.now()
@@ -154,7 +158,7 @@ class Config:
                 }, config_f)
 
     @classmethod
-    def from_dict(cls: t.Type["Config"], path: P, obj: dict):
+    def from_dict(cls: t.Type["Config"], path: Path, obj: dict):
         expiration = dt.now()
 
         if expiration_str := obj.get("access_token_expiration"):
@@ -168,7 +172,7 @@ class Config:
         )
 
     @classmethod
-    def with_path(cls, path: P):
+    def with_path(cls, path: Path):
         try:
             with open(path) as config_f:
                 return Config.from_dict(path, json.load(config_f))

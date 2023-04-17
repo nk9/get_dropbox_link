@@ -37,7 +37,7 @@ chmod +x ~/bin/get_dropbox_url.py
 12. Call the script once and follow the instructions to get a refresh token the first time:
 
 ```
-$ python get_dropbox_link.py ~/Dropbox/Public/cat.jpg
+$ get_dropbox_link.py ~/Dropbox/Public/cat.jpg
 Refresh token not found. Let's generate a new one.
 1. Go to: https://www.dropbox.com/oauth2/authorize?xxxx
 2. Click "Allow", etc. (You may need to log in first.)
