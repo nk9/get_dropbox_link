@@ -85,3 +85,25 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox URL 
 ![Assigning the keyboard shortcut](assets/keyboard-shortcut.jpg)
 
 8. Now, you can test it! Go your Dropbox folder in Finder. Select at least one file and press <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>. Your clipboard should now contain the links to the files.
+
+## Tips & Tricks
+
+### Quickly get all links for all PNG files within folder X
+
+Easy with shell globbing:
+
+      $ get_dropbox_link.py ~/Dropbox/X/*.png
+      https://www.dropbox.com/s/xxx/bike.png?dl=0
+      https://www.dropbox.com/s/xxx/clown.png?dl=0
+      https://www.dropbox.com/s/xxx/smileyface.png?dl=0
+
+### Return URL with argument `?raw=1` (embed image via URL in forums) instead of the default `?dl=0`
+
+Just pipe it through a find/replace tool like `sed`:
+
+      $ get_dropbox_link.py ~/Dropbox/X/*.png | sed 's|?dl=0|?raw=1|g'
+      https://www.dropbox.com/s/xxx/bike.png?raw=1
+      https://www.dropbox.com/s/xxx/clown.png?raw=1
+      https://www.dropbox.com/s/xxx/smileyface.png?raw=1
+
+    
