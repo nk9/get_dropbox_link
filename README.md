@@ -71,6 +71,11 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 3. In the Run Shell Script action, give it the content of:
     ```
     $HOME/bin/get_dropbox_link.py "$@"
+
+    # Play a sound on successful completion
+    if [ $? -eq 0 ]; then
+      afplay /System/Library/Sounds/Funk.aiff
+    fi 
     ```
     > **Warning**
     >
