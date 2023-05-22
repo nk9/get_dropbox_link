@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # coding=utf-8
 
 # Copyright 2023 Nick Kocharhook
