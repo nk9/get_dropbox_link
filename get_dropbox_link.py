@@ -61,7 +61,7 @@ def main():
     fetcher.fetch(args.paths)
 
 
-class LinkFetcher():
+class LinkFetcher:
     def __init__(self, app_key, config_path, account_type):
         self.app_key = app_key
         self.config = Config.with_path(config_path)
@@ -71,16 +71,20 @@ class LinkFetcher():
         local_dbx_path = None
         refresh_token = self.get_refresh_token()
 
-        with dropbox.Dropbox(oauth2_refresh_token=refresh_token,
-                             oauth2_access_token=self.config.access_token,
-                             oauth2_access_token_expiration=self.config.access_token_expiration,
-                             app_key=self.app_key) as dbx:
-            
-            if not self.config.access_token or self.config.access_token_expiration < dt.now():
+        with dropbox.Dropbox(
+            oauth2_refresh_token=refresh_token,
+            oauth2_access_token=self.config.access_token,
+            oauth2_access_token_expiration=self.config.access_token_expiration,
+            app_key=self.app_key,
+        ) as dbx:
+            if (
+                not self.config.access_token
+                or self.config.access_token_expiration < dt.now()
+            ):
                 dbx.refresh_access_token()
                 self.config.update_access_token(
-                    dbx._oauth2_access_token,
-                    dbx._oauth2_access_token_expiration)
+                    dbx._oauth2_access_token, dbx._oauth2_access_token_expiration
+                )
 
             try:
                 with open(Path.home() / ".dropbox/info.json") as jsonf:
@@ -107,34 +111,37 @@ class LinkFetcher():
                     logging.error(str(e))
                     sys.exit(1)
 
-
     def get_refresh_token(self):
         # Check if the config contains a token
         refresh_token = self.config.refresh_token
 
         # If not, go through the auth flow
         if not refresh_token:
-            auth_flow = DropboxOAuth2FlowNoRedirect(self.app_key, use_pkce=True, token_access_type='offline')
+            auth_flow = DropboxOAuth2FlowNoRedirect(
+                self.app_key, use_pkce=True, token_access_type="offline"
+            )
 
             authorize_url = auth_flow.start()
             webbrowser.open(authorize_url)
             print("Refresh token not found. Let's generate a new one.")
             print("1. Go to: " + authorize_url)
-            print("2. Click \"Allow\", etc. (You may need to log in first.)")
+            print('2. Click "Allow", etc. (You may need to log in first.)')
             print("3. Copy the authorization code.")
             auth_code = input("Enter the authorization code here: ").strip()
 
             try:
                 oauth_result = auth_flow.finish(auth_code)
-                
+
                 self.config.refresh_token = oauth_result.refresh_token
-                self.config.update_access_token(oauth_result.access_token,
-                                                oauth_result.expires_at)
+                self.config.update_access_token(
+                    oauth_result.access_token, oauth_result.expires_at
+                )
             except Exception as e:
                 logging.error(str(e))
                 exit(1)
 
         return refresh_token
+
 
 @dataclass
 class Config:
@@ -144,18 +151,24 @@ class Config:
     access_token_expiration: dt = dt.now()
 
     def update_access_token(self, new_token, new_expiration):
-        if new_expiration != self.access_token_expiration or new_token != self.access_token:
+        if (
+            new_expiration != self.access_token_expiration
+            or new_token != self.access_token
+        ):
             self.access_token = new_token
             self.access_token_expiration = new_expiration
             self.save()
 
     def save(self):
-        with open(self.path, 'w') as config_f:
-            json.dump({
-                "refresh_token": self.refresh_token,
-                "access_token": self.access_token,
-                "access_token_expiration": self.access_token_expiration.isoformat()
-                }, config_f)
+        with open(self.path, "w") as config_f:
+            json.dump(
+                {
+                    "refresh_token": self.refresh_token,
+                    "access_token": self.access_token,
+                    "access_token_expiration": self.access_token_expiration.isoformat(),
+                },
+                config_f,
+            )
 
     @classmethod
     def from_dict(cls: t.Type["Config"], path: Path, obj: dict):

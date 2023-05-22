@@ -31,7 +31,7 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
 11. Set permissions so you can run the script:
 
 ```
-chmod +x ~/bin/get_dropbox_url.py
+chmod +x ~/bin/get_dropbox_link.py
 ```
 
 12. Call the script once and follow the instructions to get a refresh token the first time:
@@ -48,40 +48,51 @@ https://www.dropbox.com/s/xxxx/cat.jpg?dl=0
 Now you can continue calling it to generate links.
 
 ```
-$ get_dropbox_url.py ~/Dropbox/file.txt
+$ get_dropbox_link.py ~/Dropbox/file.txt
 https://www.dropbox.com/s/xxxx/file.txt?dl=0
 $
 ```
 
 ### Automator setup
-My goal was to have a keyboard shortcut in Finder that would copy a Dropbox URL to the clipboard. If you want to do that too, you'll need to add an [Automator](https://support.apple.com/en-gb/guide/automator/welcome/mac) Quick Action. Here's how you do that.
+My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link to the clipboard. If you want to do that too, you'll need to add an [Automator](https://support.apple.com/en-gb/guide/automator/welcome/mac) Quick Action. Choose one of these options:
 
+#### Easy way
+1. Clone or [download](https://github.com/nk9/get_dropbox_link/archive/refs/heads/main.tar.gz) this git repository.
+2. Unzip it and then double-click the "Get Dropbox Link" workflow.
+3. Press Install.
+
+    > **Warning**
+    >
+    > If you have installed the script somewhere other than `~/bin/get_dropbox_link.py`, you will need to edit the workflow to point at your custom location. You can find it in ~/Library/Services.
+
+#### Manual way
 1. Open Automator and create a new Quick Action.
-2. Find and drag over three actions: Get Selected Finder Items, Run Shell Script, and Copy to Clipboard.
+2. Find and drag over two actions: Run Shell Script, and Copy to Clipboard.
 3. In the Run Shell Script action, give it the content of:
     ```
-    for f in "$@"
-    do
-        $HOME/bin/get_dropbox_url.py "$f"
-    done
+    $HOME/bin/get_dropbox_link.py "$@"
     ```
     > **Warning**
     >
-    > Make sure you change the popup button to _Pass input as arguments_.
+    > Make sure you set the workflow to receive the current files or folders from Finder. Also, change the popup button to _Pass input as arguments_.
 
     > **Warning**
     >
     > Make sure the path here is the same as the path that you saved the script to earlier!
 
-4. Save the Quick Action to the default location. Give it the name you want it to have in the menu, like "Get Dropbox URL".
+4. Save the Quick Action to the default location (~/Library/Services). Give it the name you want it to have in the menu, like "Get Dropbox Link".
 
 5. Once you're done, the action should look like this:
 
 ![Completed Quick Action](assets/quick-action.jpg)
 
-6. Now, you need to assign a keyboard command to this action. Open System Preferences > Keyboard > Shortcuts and navigate to Services. It will probably appear under "Files and Folders", but may also be under "General".
-7. Make sure the checkbox to the left is checked, and give it a shortcut. Here, I've  chosen <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>.
+
+### Finder shortcut
+Now that you have the script and workflow installed, the last piece is the Finder shortcut.
+
+1. Open System Preferences > Keyboard > Shortcuts and navigate to Services. It will probably appear under "Files and Folders", but may also be under "General".
+2. Make sure the checkbox to the left is checked, and give it a shortcut. Here, I've  chosen <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>.
 
 ![Assigning the keyboard shortcut](assets/keyboard-shortcut.jpg)
 
-8. Now, you can test it! Go your Dropbox folder in Finder. Select at least one file and press <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>. Your clipboard should now contain the links to the files.
+3. Now, you can test it! Go your Dropbox folder in Finder. Select at least one file and press <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>. Your clipboard should now contain the links to the files.
