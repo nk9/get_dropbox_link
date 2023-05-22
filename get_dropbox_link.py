@@ -34,6 +34,8 @@ from dataclasses import dataclass
 from datetime import datetime as dt
 from pathlib import Path
 from enum import IntEnum
+from concurrent.futures import ThreadPoolExecutor
+from itertools import repeat
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
@@ -53,8 +55,12 @@ APP_KEY = ""
 # See <https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder>
 ACCOUNT_TYPE = AccountType.PERSONAL
 
-# Path to save script configuration. You probably don't need to change this.
+# ADVANCED SETTINGS (Leave these alone.)
+# Path to save script configuration.
 CONFIG_PATH = "~/.get_dropbox_link_conf.json"
+
+# Number of concurrent requests to the Dropbox API.
+MAX_WORKERS = 10
 
 
 def main():
@@ -101,22 +107,32 @@ class LinkFetcher:
                 logging.error(f"Couldn't find Dropbox folder path: {e}")
                 sys.exit(1)
 
-            for path in paths:
-                try:
-                    p = Path(path).absolute()
-                    logging.debug(f"Processing file at path {p}")
-                    relative_p = p.relative_to(local_dbx_path)
-                    dbx_path = f"/{relative_p}"
-                except Exception as e:
-                    logging.error(str(e))
-                    sys.exit(1)
+            processed = []
+            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                processed = executor.map(
+                    self.fetch_link, paths, repeat(dbx), repeat(local_dbx_path)
+                )
 
-                try:
-                    link = dbx.sharing_create_shared_link(dbx_path)
-                    print(link.url)
-                except dropbox.exceptions.ApiError as e:
-                    logging.error(str(e))
-                    sys.exit(1)
+            for link in processed:
+                print(link)
+
+    def fetch_link(self, path, dbx, local_dbx_path):
+        try:
+            p = Path(path).absolute()
+            logging.debug(f"Processing file at path {p}")
+            relative_p = p.relative_to(local_dbx_path)
+            dbx_path = f"/{relative_p}"
+        except Exception as e:
+            logging.error(str(e))
+            sys.exit(1)
+
+        try:
+            logging.debug(f"Creating shared link for {dbx_path}")
+            link = dbx.sharing_create_shared_link(dbx_path)
+            return link.url
+        except Exception as e:
+            logging.error(str(e))
+            sys.exit(1)
 
     def get_refresh_token(self):
         # Check if the config contains a token
