@@ -27,7 +27,7 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
 ![Copy App Key on the Settings tab](assets/app-key.jpg)
 
 9. Use this to update the `APP_KEY` variable on line 39 in the script file.
-10. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 44.
+10. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 54.
 11. Set permissions so you can run the script:
 
 ```

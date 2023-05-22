@@ -33,18 +33,25 @@ import webbrowser
 from dataclasses import dataclass
 from datetime import datetime as dt
 from pathlib import Path
+from enum import IntEnum
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
+
+
+class AccountType(IntEnum):
+    PERSONAL = 1
+    BUSINESS = 2
+
 
 # This is the App Key, NOT an OAuth2 token. Find your app's key in the App Console.
 # See the README.
 APP_KEY = ""
 
-# Either 'personal' or 'business'. Must match the account which generated
-# the TOKEN above.
+# Either PERSONAL or BUSINESS. Must match the account which generated
+# the APP_KEY above.
 # See <https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder>
-ACCOUNT_TYPE = "personal"
+ACCOUNT_TYPE = AccountType.PERSONAL
 
 # Path to save script configuration. You probably don't need to change this.
 CONFIG_PATH = "~/.get_dropbox_link_conf.json"
@@ -65,7 +72,7 @@ class LinkFetcher:
     def __init__(self, app_key, config_path, account_type):
         self.app_key = app_key
         self.config = Config.with_path(config_path)
-        self.account_type = account_type
+        self.account_type = account_type.name.lower()
 
     def fetch(self, paths):
         local_dbx_path = None
