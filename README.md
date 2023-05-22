@@ -11,7 +11,7 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
 2. Install the dropbox Python SDK:
 
     ```
-    pip3 install dropbox
+    /usr/bin/python3 -m pip install dropbox
     ```
 
 3. [Create a Dropbox app](https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account) on the [Dropbox App Console](https://www.dropbox.com/developers/apps).
