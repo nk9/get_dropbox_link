@@ -60,7 +60,10 @@
 				<dict>
 					<key>COMMAND_STRING</key>
 					<string>$HOME/bin/get_dropbox_link.py "$@"
-</string>
+
+if [ $? -eq 0 ]; then
+  afplay /System/Library/Sounds/Funk.aiff
+fi</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
@@ -173,7 +176,7 @@
 				<key>isViewVisible</key>
 				<integer>1</integer>
 				<key>location</key>
-				<string>285.000000:305.000000</string>
+				<string>267.000000:305.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
@@ -260,7 +263,7 @@
 	</array>
 	<key>connectors</key>
 	<dict>
-		<key>EF6D4BBD-8F76-4FFC-8543-774D8038A838</key>
+		<key>BF7F4E96-7079-49EC-A366-03786C1B40A4</key>
 		<dict>
 			<key>from</key>
 			<string>DA209602-0D6A-4F40-BE78-9E8E47A21711 - DA209602-0D6A-4F40-BE78-9E8E47A21711</string>

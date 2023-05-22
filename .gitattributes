@@ -2,3 +2,4 @@
 
 # Don't convert line endings in binary files
 *.jpg   binary
+*.png   binary
