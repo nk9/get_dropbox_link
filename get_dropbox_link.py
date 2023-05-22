@@ -145,7 +145,7 @@ class LinkFetcher:
                 )
             except Exception as e:
                 logging.error(str(e))
-                exit(1)
+                sys.exit(1)
 
         return refresh_token
 
