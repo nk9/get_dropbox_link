@@ -59,11 +59,7 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>$HOME/bin/get_dropbox_link.py "$@"
-
-if [ $? -eq 0 ]; then
-  afplay /System/Library/Sounds/Funk.aiff
-fi</string>
+					<string>$HOME/bin/get_dropbox_link.py "$@"</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>

@@ -71,11 +71,6 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 3. In the Run Shell Script action, give it the content of:
     ```
     $HOME/bin/get_dropbox_link.py "$@"
-
-    # Play a sound on successful completion
-    if [ $? -eq 0 ]; then
-      afplay /System/Library/Sounds/Funk.aiff
-    fi 
     ```
     > **Warning**
     >
@@ -100,4 +95,4 @@ Now that you have the script and workflow installed, the last piece is the Finde
 
 ![Assigning the keyboard shortcut](assets/keyboard-shortcut.jpg)
 
-3. Now, you can test it! Go to your Dropbox folder in Finder. Select at least one file and press <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>. Your clipboard should now contain the links to the files. Note that when creating multiple links, each link has to be requested individually, so there may be a delay before the links appear on your clipboard. Listen for the "finished" sound, or watch for the spinning Automator gear in your menu bar.
+3. Now, you can test it! Go to your Dropbox folder in Finder. Select at least one file and press <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>. Your clipboard should now contain the links to the files. Note that when creating multiple links, each link has to be requested individually, so there may be a delay before the links appear on your clipboard. Watch for the spinning Automator gear in your menu bar.
