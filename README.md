@@ -8,10 +8,11 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
 ### Script setup
 1. Download the script and place it somewhere in your `PATH`, for example `$HOME/bin`.
 
-2. Install the dropbox Python SDK:
+2. Install the dropbox Python SDK and pin Urlaub3 to an earlier version. (The second command may not be necessary in your case, see issue [#4](https://github.com/nk9/get_dropbox_link/issues/6))
 
     ```
     /usr/bin/python3 -m pip install dropbox
+    /usr/bin/python3 -m pip install urllib3==1.26.6
     ```
 
 3. [Create a Dropbox app](https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account) on the [Dropbox App Console](https://www.dropbox.com/developers/apps).
