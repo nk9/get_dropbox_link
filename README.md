@@ -3,37 +3,36 @@ Dropbox should provide a keyboard command to quickly get a link in Finder for a 
 
 So I wrote this script to do that. Read more about it on the [Dropbox Forum](https://www.dropboxforum.com/t5/View-download-and-export/Key-Command-Shortcut-to-quot-Copy-Dropbox-Link-quot-from-Mac/td-p/168482/highlight/false).
 
-## Instructions
+## Script Setup
+1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) or [download](https://github.com/nk9/get_dropbox_link/archive/refs/heads/main.tar.gz) this git repository.
 
-### Script setup
-1. Download the script and place it somewhere in your `PATH`, for example `$HOME/bin`.
+2. Place the `get_dropbox_link.py` script somewhere in your `PATH`. The rest of these instructions assume you've placed it in `$HOME/bin`.
+3. Set the script's permissions so you can run it:
 
-2. Install the dropbox Python SDK and pin urllib3 to an earlier version. (The second command may not be necessary in your case, see issue [#6](https://github.com/nk9/get_dropbox_link/issues/6).)
+    ```
+    chmod +x ~/bin/get_dropbox_link.py
+    ```
+
+4. Install the dropbox Python SDK. You may also need to pin urllib3 to an earlier version. (See issue [#6](https://github.com/nk9/get_dropbox_link/issues/6) for more.)
 
     ```
     /usr/bin/python3 -m pip install dropbox
     /usr/bin/python3 -m pip install urllib3==1.26.6
     ```
 
-3. [Create a Dropbox app](https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account) on the [Dropbox App Console](https://www.dropbox.com/developers/apps).
-4. Give the app an access type of Full Access.
-5. Create it.
-6. Change the Permissions settings to have a scope of `sharing.write`.
+5. [Create a Dropbox app](https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account) on the [Dropbox App Console](https://www.dropbox.com/developers/apps).
+6. Give the app an access type of Full Access.
+7. Create it.
+8. Change the Permissions settings to have a scope of `sharing.write`.
 
 ![Change sharing.write permission setting](assets/sharing.write.jpg)
 
-7. Reload the page. (This is in case you've already created an access token. Once you change the permissions, you need to generate a new token!)
-8. Copy the App Key:
+9. Copy the App Key:
 
 ![Copy App Key on the Settings tab](assets/app-key.jpg)
 
-9. Use this to update the `APP_KEY` variable on line 39 in the script file.
-10. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 54.
-11. Set permissions so you can run the script:
-
-    ```
-    chmod +x ~/bin/get_dropbox_link.py
-    ```
+10. Use this to update the `APP_KEY` variable on line 51 in the script file.
+11. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 54.
 
 12. Call the script once and follow the instructions to get a refresh token the first time:
 
@@ -49,24 +48,25 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
     Now you can continue calling it to generate links.
 
     ```
-    $ get_dropbox_link.py ~/Dropbox/file.txt
+    $ get_dropbox_link.py ~/Dropbox/file.txt ~/Dropbox/file2.txt
     https://www.dropbox.com/s/xxxx/file.txt?dl=0
+    https://www.dropbox.com/s/xxxx/file2.txt?dl=0
     $
     ```
 
-### Automator setup
+## Automator Setup
 My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link to the clipboard. If you want to do that too, you'll need to add an [Automator](https://support.apple.com/en-gb/guide/automator/welcome/mac) Quick Action. Choose one of these options:
 
-#### Easy way
-1. Clone or [download](https://github.com/nk9/get_dropbox_link/archive/refs/heads/main.tar.gz) this git repository.
-2. Unzip it and then double-click the "Get Dropbox Link" workflow.
-3. Press Install.
+### Easy Way
+1. In your local copy of this repo, double-click the "Get Dropbox Link" workflow.
+2. Press Install.
+3. There's no step 3.
 
     > **Warning**
     >
     > If you have installed the script somewhere other than `~/bin/get_dropbox_link.py`, you will need to edit the workflow to point at your custom location. You can find it in ~/Library/Services.
 
-#### Manual way
+### Manual Way
 1. Open Automator and create a new Quick Action.
 2. Find and drag over two actions: Run Shell Script, and Copy to Clipboard.
 3. In the Run Shell Script action, give it the content of:
@@ -92,7 +92,7 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 > Please note that pressing "Run" within Automator will complain about missing the `paths` argument. This is correct, and happens because Automator doesn't have any selected Finder items to pass into the workflow. Instead, you need to hook up the shortcut below and use the workflow as a Quick Action from Finder via the Services menu. Learn more at [AskDifferent](https://apple.stackexchange.com/questions/379096/why-automators-component-get-selected-finder-items-duplicates-path-of-selecte/379100#379100) and [Apple Support](https://support.apple.com/en-gb/guide/automator/aut73234890a/mac).
 
 
-### Finder shortcut
+## Finder Shortcut
 Now that you have the script and workflow installed, the last piece is the Finder shortcut.
 
 1. Open System Preferences > Keyboard > Shortcuts and navigate to Services. In the outline view, under "Files and Folders", locate the "Get Dropbox Link" service.
