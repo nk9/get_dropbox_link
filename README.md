@@ -95,7 +95,7 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 ### Finder shortcut
 Now that you have the script and workflow installed, the last piece is the Finder shortcut.
 
-1. Open System Preferences > Keyboard > Shortcuts and navigate to Services. It will probably appear under "Files and Folders", but may also be under "General".
+1. Open System Preferences > Keyboard > Shortcuts and navigate to Services. In the outline view, under "Files and Folders", locate the "Get Dropbox Link" service.
 2. Make sure the checkbox to the left is checked, and give it a shortcut. Here, I've  chosen <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>L</kbd>.
 
 ![Assigning the keyboard shortcut](assets/keyboard-shortcut.jpg)
