@@ -31,28 +31,28 @@ So I wrote this script to do that. Read more about it on the [Dropbox Forum](htt
 10. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 54.
 11. Set permissions so you can run the script:
 
-```
-chmod +x ~/bin/get_dropbox_link.py
-```
+    ```
+    chmod +x ~/bin/get_dropbox_link.py
+    ```
 
 12. Call the script once and follow the instructions to get a refresh token the first time:
 
-```
-$ get_dropbox_link.py ~/Dropbox/Public/cat.jpg
-Refresh token not found. Let's generate a new one.
-1. Go to: https://www.dropbox.com/oauth2/authorize?xxxx
-2. Click "Allow", etc. (You may need to log in first.)
-3. Copy the Access Code.
-Enter the Access Code here: xxxx
-https://www.dropbox.com/s/xxxx/cat.jpg?dl=0
-```
-Now you can continue calling it to generate links.
+    ```
+    $ get_dropbox_link.py ~/Dropbox/Public/cat.jpg
+    Refresh token not found. Let's generate a new one.
+    1. Go to: https://www.dropbox.com/oauth2/authorize?xxxx
+    2. Click "Allow", etc. (You may need to log in first.)
+    3. Copy the Access Code.
+    Enter the Access Code here: xxxx
+    https://www.dropbox.com/s/xxxx/cat.jpg?dl=0
+    ```
+    Now you can continue calling it to generate links.
 
-```
-$ get_dropbox_link.py ~/Dropbox/file.txt
-https://www.dropbox.com/s/xxxx/file.txt?dl=0
-$
-```
+    ```
+    $ get_dropbox_link.py ~/Dropbox/file.txt
+    https://www.dropbox.com/s/xxxx/file.txt?dl=0
+    $
+    ```
 
 ### Automator setup
 My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link to the clipboard. If you want to do that too, you'll need to add an [Automator](https://support.apple.com/en-gb/guide/automator/welcome/mac) Quick Action. Choose one of these options:
@@ -85,7 +85,11 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 
 5. Once you're done, the action should look like this:
 
-![Completed Quick Action](assets/quick-action.jpg)
+    ![Completed Quick Action](assets/quick-action.jpg)
+
+> **Info**
+>
+> Please note that pressing "Run" within Automator will complain about missing the `paths` argument. This is correct, and happens because Automator doesn't have any selected Finder items to pass into the workflow. Instead, you need to hook up the shortcut below and use the workflow as a Quick Action from Finder via the Services menu.
 
 
 ### Finder shortcut
