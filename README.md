@@ -87,7 +87,7 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 
     ![Completed Quick Action](assets/quick-action.jpg)
 
-> **Info**
+> **Note**
 >
 > Please note that pressing "Run" within Automator will complain about missing the `paths` argument. This is correct, and happens because Automator doesn't have any selected Finder items to pass into the workflow. Instead, you need to hook up the shortcut below and use the workflow as a Quick Action from Finder via the Services menu.
 
