@@ -89,7 +89,7 @@ My goal was to have a keyboard shortcut in Finder that would copy a Dropbox link
 
 > **Note**
 >
-> Please note that pressing "Run" within Automator will complain about missing the `paths` argument. This is correct, and happens because Automator doesn't have any selected Finder items to pass into the workflow. Instead, you need to hook up the shortcut below and use the workflow as a Quick Action from Finder via the Services menu.
+> Please note that pressing "Run" within Automator will complain about missing the `paths` argument. This is correct, and happens because Automator doesn't have any selected Finder items to pass into the workflow. Instead, you need to hook up the shortcut below and use the workflow as a Quick Action from Finder via the Services menu. Learn more at [AskDifferent](https://apple.stackexchange.com/questions/379096/why-automators-component-get-selected-finder-items-duplicates-path-of-selecte/379100#379100) and [Apple Support](https://support.apple.com/en-gb/guide/automator/aut73234890a/mac).
 
 
 ### Finder shortcut
