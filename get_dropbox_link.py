@@ -36,6 +36,7 @@ from pathlib import Path
 from enum import IntEnum
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
+from urllib.parse import urlparse
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
@@ -70,15 +71,16 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
 
     config_path = Path(CONFIG_PATH).expanduser()
-    fetcher = LinkFetcher(APP_KEY, config_path, ACCOUNT_TYPE)
+    fetcher = LinkFetcher(APP_KEY, config_path, ACCOUNT_TYPE, args.query)
     fetcher.fetch(args.paths)
 
 
 class LinkFetcher:
-    def __init__(self, app_key, config_path, account_type):
+    def __init__(self, app_key, config_path, account_type, query):
         self.app_key = app_key
         self.config = Config.with_path(config_path)
         self.account_type = account_type.name.lower()
+        self.query = query
 
     def fetch(self, paths):
         local_dbx_path = None
@@ -129,7 +131,8 @@ class LinkFetcher:
         try:
             logging.debug(f"Creating shared link for {dbx_path}")
             link = dbx.sharing_create_shared_link(dbx_path)
-            return link.url
+            url = urlparse(link.url)._replace(query=self.query).geturl()
+            return url
         except Exception as e:
             logging.error(str(e))
             sys.exit(1)
@@ -222,6 +225,9 @@ def parseArguments():
     parser.add_argument("paths", type=str, nargs="+", help="paths to files")
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="toggle verbose mode"
+    )
+    parser.add_argument(
+        "--query", type=str, default="dl=0", help="The query string for generated URLs"
     )
 
     args = parser.parse_args()
