@@ -108,6 +108,7 @@ class LinkFetcher:
                 with open(Path.home() / ".dropbox/info.json") as jsonf:
                     info = json.load(jsonf)
                     local_dbx_path = info[self.account_type]["path"]
+                    logging.debug(f"{local_dbx_path=}")
             except Exception as e:
                 logging.error(f"Couldn't find Dropbox folder path: {e}")
                 sys.exit(1)
@@ -123,7 +124,7 @@ class LinkFetcher:
 
     def fetch_link(self, path, dbx, local_dbx_path):
         try:
-            p = Path(path).absolute()
+            p = Path(path).resolve().absolute()
             logging.debug(f"Processing file at path {p}")
             relative_p = p.relative_to(local_dbx_path)
             dbx_path = f"/{relative_p}"
