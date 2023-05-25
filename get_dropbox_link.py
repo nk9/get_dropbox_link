@@ -136,7 +136,9 @@ class LinkFetcher:
             logging.debug(f"Creating shared link for {dbx_path}")
             link = dbx.sharing_create_shared_link(dbx_path)
             url = urlparse(link.url)
-            url = url._replace(query=self.query)
+
+            if self.query:
+                url = url._replace(query=self.query)
 
             if self.plus_for_space:
                 path = Path(url.path)
@@ -238,7 +240,7 @@ def parseArguments():
         "--verbose", "-v", action="store_true", help="toggle verbose mode"
     )
     parser.add_argument(
-        "--query", type=str, default="dl=0", help="The query string for generated URLs"
+        "--query", type=str, help="Override query string for generated URLs"
     )
     parser.add_argument(
         "--plus-for-space",
