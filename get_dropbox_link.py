@@ -71,16 +71,19 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
 
     config_path = Path(CONFIG_PATH).expanduser()
-    fetcher = LinkFetcher(APP_KEY, config_path, ACCOUNT_TYPE, args.query)
+    fetcher = LinkFetcher(
+        APP_KEY, config_path, ACCOUNT_TYPE, args.query, args.plus_for_space
+    )
     fetcher.fetch(args.paths)
 
 
 class LinkFetcher:
-    def __init__(self, app_key, config_path, account_type, query):
+    def __init__(self, app_key, config_path, account_type, query, plus_for_space):
         self.app_key = app_key
         self.config = Config.with_path(config_path)
         self.account_type = account_type.name.lower()
         self.query = query
+        self.plus_for_space = plus_for_space
 
     def fetch(self, paths):
         local_dbx_path = None
@@ -131,8 +134,15 @@ class LinkFetcher:
         try:
             logging.debug(f"Creating shared link for {dbx_path}")
             link = dbx.sharing_create_shared_link(dbx_path)
-            url = urlparse(link.url)._replace(query=self.query).geturl()
-            return url
+            url = urlparse(link.url)
+            url = url._replace(query=self.query)
+
+            if self.plus_for_space:
+                path = Path(url.path)
+                new_path = path.with_stem(path.stem.replace("%20", "+"))
+                url = url._replace(path=str(new_path))
+
+            return url.geturl()
         except Exception as e:
             logging.error(str(e))
             sys.exit(1)
@@ -228,6 +238,11 @@ def parseArguments():
     )
     parser.add_argument(
         "--query", type=str, default="dl=0", help="The query string for generated URLs"
+    )
+    parser.add_argument(
+        "--plus-for-space",
+        action="store_true",
+        help="Convert URL-encoded spaces to a plus",
     )
 
     args = parser.parse_args()
