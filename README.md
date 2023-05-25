@@ -3,6 +3,22 @@ Dropbox should provide a keyboard command to quickly get a link in Finder for a 
 
 So I wrote this script to do that. Read more about it on the [Dropbox Forum](https://www.dropboxforum.com/t5/View-download-and-export/Key-Command-Shortcut-to-quot-Copy-Dropbox-Link-quot-from-Mac/td-p/168482/highlight/false).
 
+The script uses threads to send up to 10 link requests at a time, so it should be quite speedy, especially if you can batch your requests.
+
+## Usage
+```
+$ get_dropbox_link.py ~/Dropbox/file*
+https://www.dropbox.com/s/xxxx/file%20to%20share.txt?dl=0
+https://www.dropbox.com/s/xxxx/file2.jpg?dl=0
+```
+
+There are a couple of arguments available to change the returned URLs, which can be used independently:
+```
+$ get_dropbox_link.py ~/Dropbox/file* --plus-for-space --query raw=1
+https://www.dropbox.com/s/xxxx/file+to+share.txt?raw=1
+https://www.dropbox.com/s/xxxx/file2.jpg?raw=1
+```
+
 ## Script Setup
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) or [download](https://github.com/nk9/get_dropbox_link/archive/refs/heads/main.tar.gz) this git repository.
 
