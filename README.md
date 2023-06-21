@@ -47,8 +47,8 @@ https://www.dropbox.com/s/xxxx/file2.jpg?raw=1
 
 ![Copy App Key on the Settings tab](assets/app-key.jpg)
 
-10. Use this to update the `APP_KEY` variable on line 51 in the script file.
-11. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 54.
+10. Use this to update the `APP_KEY` variable on line 53 in the script file.
+11. If you use a Dropbox Business account, change the `ACCOUNT_TYPE` variable on line 58.
 
 12. Call the script once and follow the instructions to get a refresh token the first time:
 

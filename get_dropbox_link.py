@@ -40,6 +40,7 @@ from urllib.parse import urlparse
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
+from dropbox.sharing import PendingUploadMode
 
 
 class AccountType(IntEnum):
@@ -134,7 +135,9 @@ class LinkFetcher:
 
         try:
             logging.debug(f"Creating shared link for {dbx_path}")
-            link = dbx.sharing_create_shared_link(dbx_path)
+            link = dbx.sharing_create_shared_link(
+                dbx_path, pending_upload=PendingUploadMode.file
+            )
             url = urlparse(link.url)
 
             if self.query:
