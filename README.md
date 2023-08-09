@@ -15,8 +15,15 @@ https://www.dropbox.com/s/xxxx/file2.jpg?dl=0
 There are a couple of arguments available to change the returned URLs, which can be used independently:
 ```
 $ get_dropbox_link.py ~/Dropbox/file* --plus-for-space --query raw=1
-https://www.dropbox.com/s/xxxx/file+to+share.txt?raw=1
+https://www.dropbox.com/s/xxxx/file+to+share.txt?dl=0&raw=1
+https://www.dropbox.com/s/xxxx/file2.jpg?dl=0&raw=1
+```
+
+Note that you can remove an argument from the returned Dropbox link by marking it as empty:
+```
+$ get_dropbox_link.py ~/Dropbox/file2.jpg --query 'raw=1&dl='
 https://www.dropbox.com/s/xxxx/file2.jpg?raw=1
+
 ```
 
 ## Script Setup

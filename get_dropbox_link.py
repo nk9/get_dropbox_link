@@ -36,7 +36,7 @@ from pathlib import Path
 from enum import IntEnum
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs, urlencode
 
 import dropbox
 from dropbox import DropboxOAuth2FlowNoRedirect
@@ -83,7 +83,7 @@ class LinkFetcher:
         self.app_key = app_key
         self.config = Config.with_path(config_path)
         self.account_type = account_type.name.lower()
-        self.query = query
+        self.query = self.parse_query(query)
         self.plus_for_space = plus_for_space
 
     def fetch(self, paths):
@@ -138,10 +138,16 @@ class LinkFetcher:
             link = dbx.sharing_create_shared_link(
                 dbx_path, pending_upload=PendingUploadMode.file
             )
+            logging.debug(f"Shared link returned: {link}")
             url = urlparse(link.url)
 
             if self.query:
-                url = url._replace(query=self.query)
+                merged = parse_qs(url.query) | self.query
+
+                # Remove any empty items
+                query_dict = {k: v for k, v in merged.items() if v != [""]}
+                new_query_string = urlencode(query_dict, doseq=True)
+                url = url._replace(query=new_query_string)
 
             if self.plus_for_space:
                 path = Path(url.path)
@@ -183,6 +189,18 @@ class LinkFetcher:
                 sys.exit(1)
 
         return refresh_token
+
+    def parse_query(self, qstr):
+        query_dict = {}
+
+        if qstr:
+            try:
+                query_dict = parse_qs(qstr, strict_parsing=True, keep_blank_values=True)
+            except Exception as e:
+                logging.error("Failed parsing provided query: ", str(e))
+                sys.exit(1)
+
+        return query_dict
 
 
 @dataclass
