@@ -48,11 +48,6 @@ class AccountType(IntEnum):
     BUSINESS = 2
 
 
-# Either PERSONAL or BUSINESS. Must match the account which generated
-# the App Key.
-# See <https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder>
-ACCOUNT_TYPE = AccountType.PERSONAL
-
 # ADVANCED SETTINGS (Leave these alone.)
 # Path to save script configuration.
 CONFIG_PATH = "~/.get_dropbox_link_conf.json"
@@ -74,16 +69,15 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
 
     config_path = Path(CONFIG_PATH).expanduser()
-    fetcher = LinkFetcher(config_path, ACCOUNT_TYPE, args.query, args.plus_for_space)
+    fetcher = LinkFetcher(config_path, args.query, args.plus_for_space)
     fetcher.fetch(args.paths)
 
 
 class LinkFetcher:
-    def __init__(self, config_path, account_type, query, plus_for_space):
+    def __init__(self, config_path, query, plus_for_space):
         self.config = Config.with_path(config_path)
         self.config.require_app_key()
 
-        self.account_type = account_type.name.lower()
         self.query = self.parse_query(query)
         self.plus_for_space = plus_for_space
 
@@ -109,7 +103,7 @@ class LinkFetcher:
             try:
                 with open(Path.home() / ".dropbox/info.json") as jsonf:
                     info = json.load(jsonf)
-                    local_dbx_path = info[self.account_type]["path"]
+                    local_dbx_path = info[self.config.account_type.name.lower()]["path"]
                     logging.debug(f"{local_dbx_path=}")
             except Exception as e:
                 logging.error(f"Couldn't find Dropbox folder path: {e}")
@@ -172,7 +166,7 @@ class LinkFetcher:
 
             authorize_url = auth_flow.start()
             webbrowser.open(authorize_url)
-            print("Refresh token not found. Let's generate a new one.")
+            print("\n=>Refresh token not found. Let's generate a new one.")
             print("1. Go to: " + authorize_url)
             print('2. Click "Allow", etc. (You may need to log in first.)')
             print("3. Copy the authorization code.")
@@ -208,6 +202,7 @@ class LinkFetcher:
 class Config:
     path: Path
     app_key: t.Optional[str]
+    account_type: t.Optional[AccountType]
     refresh_token: t.Optional[str]
     access_token: t.Optional[str]
     access_token_expiration: dt = dt.now()
@@ -222,13 +217,36 @@ class Config:
             self.save()
 
     def require_app_key(self):
+        save = False
+
         if self.app_key is None:
             while self.app_key is None or len(self.app_key) < 10:
                 print(
-                    "Please provide your app's App Key. This is NOT an OAuth2 token.\n"
+                    "=>Please provide your app's App Key. This is NOT an OAuth2 token.\n"
                     "Find the App Key in the App Console. See the README."
                 )
                 self.app_key = input("App Key: ").strip()
+
+            save = True
+
+        if self.account_type is None:
+            account_type_str = ""
+            while account_type_str not in {"p", "personal", "b", "business"}:
+                print(
+                    "\n=> Which kind of Dropbox account is this App Key associated with?"
+                )
+                account_type_str = input("[p]ersonal or [b]usiness? ").strip().lower()
+
+            if account_type_str in {"p", "personal"}:
+                self.account_type = AccountType.PERSONAL
+            else:
+                self.account_type = AccountType.BUSINESS
+
+            save = True
+
+        # Only save if both values are present and either was modified
+        if save:
+            self.save()
 
     def save(self):
         with open(self.path, "w") as config_f:
@@ -236,6 +254,7 @@ class Config:
                 {
                     "app_key": self.app_key,
                     "refresh_token": self.refresh_token,
+                    "account_type": self.account_type.name,
                     "access_token": self.access_token,
                     "access_token_expiration": self.access_token_expiration.isoformat(),
                 },
@@ -245,13 +264,18 @@ class Config:
     @classmethod
     def from_dict(cls: t.Type["Config"], path: Path, obj: dict):
         expiration = dt.now()
+        account_type = None
 
         if expiration_str := obj.get("access_token_expiration"):
             expiration = dt.fromisoformat(expiration_str)
 
+        if account_type_str := obj.get("account_type"):
+            account_type = AccountType[account_type_str]
+
         return cls(
             path=path,
             app_key=obj.get("app_key"),
+            account_type=account_type,
             refresh_token=obj.get("refresh_token"),
             access_token=obj.get("access_token"),
             access_token_expiration=expiration,
@@ -264,7 +288,7 @@ class Config:
                 return Config.from_dict(path, json.load(config_f))
         except:
             # If the file doesn't exist yet, or doesn't contain JSON
-            return Config(path, None, None, None)
+            return Config(path, None, None, None, None)
 
 
 def parseArguments():
