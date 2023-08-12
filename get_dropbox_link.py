@@ -4,7 +4,7 @@
 # Copyright 2023 Nick Kocharhook
 # MIT Licensed
 
-# Version 3 - https://github.com/nk9/get_dropbox_link
+# https://github.com/nk9/get_dropbox_link
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ class AccountType(IntEnum):
 
 # This is the App Key, NOT an OAuth2 token. Find your app's key in the App Console.
 # See the README.
-APP_KEY = ""
+APP_KEY = "ckqoamojrmvczg6"
 
 # Either PERSONAL or BUSINESS. Must match the account which generated
 # the APP_KEY above.
@@ -64,9 +64,15 @@ CONFIG_PATH = "~/.get_dropbox_link_conf.json"
 # Number of concurrent requests to the Dropbox API.
 MAX_WORKERS = 10
 
+VERSION = 4
+
 
 def main():
     args = parseArguments()
+
+    if args.version:
+        print(f"{VERSION}")
+        sys.exit(0)
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -146,7 +152,7 @@ class LinkFetcher:
 
                 # Remove any empty items
                 query_dict = {k: v for k, v in merged.items() if v != [""]}
-                new_query_string = urlencode(query_dict, doseq=True)
+                new_query_string = urlencode(merged, doseq=True)
                 url = url._replace(query=new_query_string)
 
             if self.plus_for_space:
@@ -260,6 +266,7 @@ def parseArguments():
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="toggle verbose mode"
     )
+    parser.add_argument("--version", "-V", action="store_true")
     parser.add_argument(
         "--query", type=str, help="Override query string for generated URLs"
     )
