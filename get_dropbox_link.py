@@ -48,12 +48,8 @@ class AccountType(IntEnum):
     BUSINESS = 2
 
 
-# This is the App Key, NOT an OAuth2 token. Find your app's key in the App Console.
-# See the README.
-APP_KEY = "ckqoamojrmvczg6"
-
 # Either PERSONAL or BUSINESS. Must match the account which generated
-# the APP_KEY above.
+# the App Key.
 # See <https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder>
 ACCOUNT_TYPE = AccountType.PERSONAL
 
@@ -78,16 +74,15 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
 
     config_path = Path(CONFIG_PATH).expanduser()
-    fetcher = LinkFetcher(
-        APP_KEY, config_path, ACCOUNT_TYPE, args.query, args.plus_for_space
-    )
+    fetcher = LinkFetcher(config_path, ACCOUNT_TYPE, args.query, args.plus_for_space)
     fetcher.fetch(args.paths)
 
 
 class LinkFetcher:
-    def __init__(self, app_key, config_path, account_type, query, plus_for_space):
-        self.app_key = app_key
+    def __init__(self, config_path, account_type, query, plus_for_space):
         self.config = Config.with_path(config_path)
+        self.config.require_app_key()
+
         self.account_type = account_type.name.lower()
         self.query = self.parse_query(query)
         self.plus_for_space = plus_for_space
@@ -100,7 +95,7 @@ class LinkFetcher:
             oauth2_refresh_token=refresh_token,
             oauth2_access_token=self.config.access_token,
             oauth2_access_token_expiration=self.config.access_token_expiration,
-            app_key=self.app_key,
+            app_key=self.config.app_key,
         ) as dbx:
             if (
                 not self.config.access_token
@@ -172,7 +167,7 @@ class LinkFetcher:
         # If not, go through the auth flow
         if not refresh_token:
             auth_flow = DropboxOAuth2FlowNoRedirect(
-                self.app_key, use_pkce=True, token_access_type="offline"
+                self.config.app_key, use_pkce=True, token_access_type="offline"
             )
 
             authorize_url = auth_flow.start()
@@ -212,6 +207,7 @@ class LinkFetcher:
 @dataclass
 class Config:
     path: Path
+    app_key: t.Optional[str]
     refresh_token: t.Optional[str]
     access_token: t.Optional[str]
     access_token_expiration: dt = dt.now()
@@ -225,10 +221,20 @@ class Config:
             self.access_token_expiration = new_expiration
             self.save()
 
+    def require_app_key(self):
+        if self.app_key is None:
+            while self.app_key is None or len(self.app_key) < 10:
+                print(
+                    "Please provide your app's App Key. This is NOT an OAuth2 token.\n"
+                    "Find the App Key in the App Console. See the README."
+                )
+                self.app_key = input("App Key: ").strip()
+
     def save(self):
         with open(self.path, "w") as config_f:
             json.dump(
                 {
+                    "app_key": self.app_key,
                     "refresh_token": self.refresh_token,
                     "access_token": self.access_token,
                     "access_token_expiration": self.access_token_expiration.isoformat(),
@@ -245,6 +251,7 @@ class Config:
 
         return cls(
             path=path,
+            app_key=obj.get("app_key"),
             refresh_token=obj.get("refresh_token"),
             access_token=obj.get("access_token"),
             access_token_expiration=expiration,
@@ -257,7 +264,7 @@ class Config:
                 return Config.from_dict(path, json.load(config_f))
         except:
             # If the file doesn't exist yet, or doesn't contain JSON
-            return Config(path, None, None)
+            return Config(path, None, None, None)
 
 
 def parseArguments():
