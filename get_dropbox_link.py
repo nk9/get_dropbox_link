@@ -137,7 +137,7 @@ class LinkFetcher:
             url = urlparse(link.url)
 
             if self.query:
-                merged = parse_qs(url.query) | self.query
+                merged = {**parse_qs(url.query), **self.query}
 
                 # Remove any empty items
                 query_dict = {k: v for k, v in merged.items() if v != [""]}
