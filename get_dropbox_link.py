@@ -141,7 +141,7 @@ class LinkFetcher:
 
                 # Remove any empty items
                 query_dict = {k: v for k, v in merged.items() if v != [""]}
-                new_query_string = urlencode(merged, doseq=True)
+                new_query_string = urlencode(query_dict, doseq=True)
                 url = url._replace(query=new_query_string)
 
             if self.plus_for_space:
